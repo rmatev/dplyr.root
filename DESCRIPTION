@@ -1,0 +1,15 @@
+Package: dplyr.root
+Title: ROOT Backend for dplyr
+Version: 0.0.0.9000
+Authors@R: "Rosen Matev <r.matev@gmail.com> [aut, cre]"
+Description: A dplyr interface to ROOT TTree (TChain) structures.
+Depends:
+    R (>= 3.1.0)
+License: GPL-3
+LazyData: true
+Imports:
+    assertthat,
+    dplyr,
+    lazyeval,
+    RootTreeToR,
+    utils
