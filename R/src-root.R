@@ -63,7 +63,7 @@ tbl.src_root <- function(src, tree_name, ...) {
 #' @export
 #' @rdname src_root
 tbl_rootchain <- function(tbls) {
-  files <- sapply(tbls, with, paste0(src$path, '/', src$tree_name))
+  files <- sapply(tbls, function(tbl) paste0(tbl$src$path, '/', tbl$tree_name))
   tree <- RootTreeToR::openRootChain(tree='', files=files, verbose=F)
 
   nms <- names(RootTreeToR::getNames(tree))
