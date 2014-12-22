@@ -107,7 +107,7 @@ select_.tbl_root <- function(.data, ..., .dots) {
   vars <- select_vars_(tbl_vars(.data), dots,
                        include = as.character(groups(.data)))
   
-  .data$vars <- .data$vars[vars]
+  .data$vars <- setNames(.data$vars[vars], names(vars))
   .data
 }
 
@@ -116,7 +116,7 @@ rename_.tbl_root <- function(.data, ..., .dots) {
   dots <- lazyeval::all_dots(.dots, ...)
   vars <- rename_vars_(tbl_vars(.data), dots)
   
-  .data$vars <- vars
+  .data$vars <- setNames(.data$vars[vars], names(vars))
   .data
 }
 
