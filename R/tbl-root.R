@@ -162,9 +162,9 @@ collect.tbl_root <- function(x, n = NULL, ...) {
     paste0('(', selections, ')', collapse=' && ')
   else
     ''
-  if (is.null(n)) n <- 0L
+  if (is.null(n) || n < 0) n <- 0L
   
-  data <- RootTreeToR::toR(x$tree, vars, selection, nEntries=as.integer(n))
+  data <- RootTreeToR::toR(x$tree, vars, selection, nEntries=nEntries(x$tree), maxSize=n)
   names(data)[1:length(vars)] <- names(vars)
   
   grouped_df(data, groups(x))
