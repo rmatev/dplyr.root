@@ -86,8 +86,13 @@ tail.tbl_root <- function(x, n = 6L, ...) {
 filter_.tbl_root <- function(.data, ..., .dots) {
   dots <- lazyeval::all_dots(.dots, ...)
   input <- partial_eval(dots, .data)
+
+  evaluated <- lapply(input, function(expr) {
+    env <- root_env(expr, .data$vars)
+    eval(expr, envir = env)
+  })
   
-  .data$selection = c(.data$selection, input)
+  .data$selection = c(.data$selection, evaluated)
   .data
 }
 
