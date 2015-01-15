@@ -63,8 +63,14 @@ tbl.src_root <- function(src, tree_name, ...) {
 
 #' @export
 #' @rdname src_root
-tbl_rootchain <- function(tbls) {
-  files <- sapply(tbls, function(tbl) paste0(tbl$src$path, '/', tbl$tree_name))
+tbl_rootchain <- function(tbls, tree_name) {
+  if (is.list(tbls)) {
+    files <- sapply(tbls, function(tbl) paste0(tbl$src$path, '/', tbl$tree_name))
+  } else if (is.character(tbls)) {
+    files <- if (missing(tree_name)) tbls else paste0(tbls, '/', tree_name)
+  } else {
+    stop('Argument tbls must be list of tables or vector of filenames.', call.=F)
+  }
   tree <- RootTreeToR::openRootChain(tree='', files=files, verbose=F)
 
   nms <- names(RootTreeToR::getNames(tree))
