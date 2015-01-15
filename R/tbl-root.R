@@ -171,6 +171,13 @@ collect.tbl_root <- function(x, n = NULL, ...) {
   needed_vars <- lapply(c(vars, selections), function(x) regmatches(x, gregexpr(pattern, x)))
   needed_vars <- unique(unlist(needed_vars))
   
+  if (n > 0 && n * length(vars) <= getOption('max.print')) {
+    initial_size <- n
+  } else {
+    n_selected <- RootTreeToR::nEntries(x$tree, selection)
+    initial_size <- if (n == 0) n_selected else min(n_selected, n)
+  }
+    
   data <- RootTreeToR::toR(x$tree,
                            vars, selection,
                            nEntries=1000000000, # TODO
