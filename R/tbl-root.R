@@ -186,22 +186,34 @@ collect.tbl_root <- function(x, n = NULL, ...) {
   
   if (n > 0 && n * length(vars) <= getOption('max.print')) {
     initial_size <- n
+    st1 <- 0
   } else {
-    n_selected <- RootTreeToR::nEntries(x$tree, selection)
+    st1 <- system.time({
+      n_selected <- RootTreeToR::nEntries(x$tree, selection)
+    })
     initial_size <- if (n == 0) n_selected else min(n_selected, n)
   }
-    
-  data <- RootTreeToR::toR(x$tree,
-                           vars, selection,
-                           nEntries=1000000000, # TODO
-                           initialSize=max(initial_size, 1),
-                           maxSize=n,
-                           activate=needed_vars
-                           )
+
+  st2 <- system.time({
+    data <- RootTreeToR::toR(x$tree,
+                             vars, selection,
+                             nEntries=1000000000, # TODO
+                             initialSize=max(initial_size, 1),
+                             maxSize=n,
+                             activate=needed_vars
+                             )
+  })
   names(data)[1:length(vars)] <- names(vars)
- 
+  
   if (!is.null(x$elist))
     clearEntryList(x$tree)
 
-  grouped_df(data, groups(x))
+  data <- grouped_df(data, groups(x))
+  
+  st <- st1 + st2
+  if (st[3] > 1.0) {
+    message(sprintf('data was retrieved in %.1f s (user %.1f s, sys %.1f s)', st[3], st[1], st[2]))
+  }
+  
+  data
 }
