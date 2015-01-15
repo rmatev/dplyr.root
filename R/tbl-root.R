@@ -59,11 +59,12 @@ dimnames.tbl_root <- function(x) {
 
 #' @export
 dim.tbl_root <- function(x) {
-  if (length(x$selection) == 0) {
+  if (length(x$selection) == 0 && is.null(x$elist)) {
     n <- RootTreeToR::nEntries(x$tree)
   } else {
     n <- NA
   }
+  # TODO implement case length(x$selection) == 0 && !is.null(x$elist)
   
   p <- length(x$vars)
   c(n, p)
@@ -152,6 +153,15 @@ group_by_.tbl_root <- function(.data, ..., .dots, add = FALSE) {
 
 #' @export
 collapse.tbl_root <- function(x, ...) {
+  if (length(x$selections) == 0)
+    return(x)
+  
+  selections <- translate_root_q(x$selection, x, env = NULL)
+  selection <- if (length(selections) > 0) paste0('(', selections, ')', collapse=' && ') else ''
+  
+  name <- paste('entrylist', sub('\\.', '_', sprintf('%.6f', Sys.time())), paste(sample(letters, 8), collapse=''), sep='_')
+  x$elist <- RootTreeToR::makeEventList(x$tree, name=name, selection, nEntries=1000000000, entryList=T)
+  x['selection'] <- list(NULL)
   x
 }
 
@@ -171,6 +181,9 @@ collect.tbl_root <- function(x, n = NULL, ...) {
   needed_vars <- lapply(c(vars, selections), function(x) regmatches(x, gregexpr(pattern, x)))
   needed_vars <- unique(unlist(needed_vars))
   
+  if (!is.null(x$elist))
+    narrowWithEntryList(x$tree, x$elist)  # TODO chain might be shared between tables, which makes concurent execution impossible
+  
   if (n > 0 && n * length(vars) <= getOption('max.print')) {
     initial_size <- n
   } else {
@@ -186,5 +199,9 @@ collect.tbl_root <- function(x, n = NULL, ...) {
                            activate=needed_vars
                            )
   names(data)[1:length(vars)] <- names(vars)
+ 
+  if (!is.null(x$elist))
+    clearEntryList(x$tree)
+
   grouped_df(data, groups(x))
 }

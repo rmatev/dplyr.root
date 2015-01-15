@@ -56,7 +56,8 @@ tbl.src_root <- function(src, tree_name, ...) {
            src = src,
            tree_name = tree_name,
            vars = vars,
-           selection = NULL
+           selection = NULL,
+           elist = NULL
            )
 }
 
@@ -72,6 +73,7 @@ tbl_rootchain <- function(tbls) {
            tree = tree,
            tbls = tbls,
            vars = vars,
-           selection = NULL
+           selection = NULL,
+           elist = NULL
            )
 }
