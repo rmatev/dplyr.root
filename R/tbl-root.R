@@ -153,7 +153,7 @@ group_by_.tbl_root <- function(.data, ..., .dots, add = FALSE) {
 
 #' @export
 collapse.tbl_root <- function(x, ...) {
-  if (length(x$selections) == 0)
+  if (length(x$selection) == 0)
     return(x)
   
   selections <- translate_root_q(x$selection, x, env = NULL)
