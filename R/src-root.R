@@ -71,7 +71,6 @@ tbl_rootchain <- function(tbls) {
   vars <- setNames(lapply(nms, rootexpr_ident), nms)
   make_tbl(c('rootchain', 'root'),
            tree = tree,
-           tbls = tbls,
            vars = vars,
            selection = NULL,
            elist = NULL
