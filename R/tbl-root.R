@@ -164,14 +164,20 @@ compute.tbl_root <- function(x, ...) {
 collect.tbl_root <- function(x, n = NULL, ...) {
   vars <- translate_root_q(x$vars, x, env = NULL)
   selections <- translate_root_q(x$selection, x, env = NULL)
-  selection <- if (length(selections) > 0)
-    paste0('(', selections, ')', collapse=' && ')
-  else
-    ''
+  selection <- if (length(selections) > 0) paste0('(', selections, ')', collapse=' && ') else ''
   if (is.null(n) || n < 0) n <- 0L
   
-  data <- RootTreeToR::toR(x$tree, vars, selection, nEntries=nEntries(x$tree), maxSize=n)
-  names(data)[1:length(vars)] <- names(vars)
+  pattern <- paste(names(RootTreeToR::getNames(x$tree)), collapse='|')
+  needed_vars <- lapply(c(vars, selections), function(x) regmatches(x, gregexpr(pattern, x)))
+  needed_vars <- unique(unlist(needed_vars))
   
+  data <- RootTreeToR::toR(x$tree,
+                           vars, selection,
+                           nEntries=1000000000, # TODO
+                           initialSize=max(initial_size, 1),
+                           maxSize=n,
+                           activate=needed_vars
+                           )
+  names(data)[1:length(vars)] <- names(vars)
   grouped_df(data, groups(x))
 }
