@@ -114,12 +114,16 @@ root_scalar <- sql_translator(
   },
   
 #   as.numeric = function(x) build_sql("CAST(", x, " AS NUMERIC)"),
-  as.integer = rootexpr_prefix("int", 1)
+  as.integer = rootexpr_prefix("int", 1),
 #   as.character = function(x) build_sql("CAST(", x, " AS TEXT)"),
   
 #   c = function(...) escape(c(...)),
 #   `:` = function(from, to) escape(from:to),
-  
+
+  between = function(x, left, right) {
+    rootexpr(sprintf("(%1$s <= %2$s) && (%2$s < %3$s)", left, x, right))
+  }
+
 #   between = function(x, left, right) {
 #     build_sql(x, " BETWEEN ", left, " AND ", right)
 #   }
