@@ -59,12 +59,11 @@ dimnames.tbl_root <- function(x) {
 
 #' @export
 dim.tbl_root <- function(x) {
-  if (length(x$selection) == 0 && is.null(x$elist)) {
-    n <- RootTreeToR::nEntries(x$tree)
+  if (length(x$selection) == 0) {
+    n <- RootTreeToR::nEntries(if (is.null(x$elist)) x$tree else x$elist)
   } else {
     n <- NA
   }
-  # TODO implement case length(x$selection) == 0 && !is.null(x$elist)
   
   p <- length(x$vars)
   c(n, p)
