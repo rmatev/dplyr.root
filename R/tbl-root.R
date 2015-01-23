@@ -159,8 +159,14 @@ collapse.tbl_root <- function(x, ...) {
   selection <- if (length(selections) > 0) paste0('(', selections, ')', collapse=' && ') else ''
   
   name <- paste('entrylist', sub('\\.', '_', sprintf('%.6f', Sys.time())), paste(sample(letters, 8), collapse=''), sep='_')
-  x$elist <- RootTreeToR::makeEventList(x$tree, name=name, selection, nEntries=1000000000, entryList=T)
-  x['selection'] <- list(NULL)
+  st <- system.time({
+    elist <- RootTreeToR::makeEventList(x$tree, name=name, selection, nEntries=1000000000, entryList=T)
+  })
+  if (st[3] > 1.0) {
+    message(sprintf('selection was collapsed in %.1f s (user %.1f s, sys %.1f s)', st[3], st[1], st[2]))
+  }
+  
+  x[c('elist', 'selection')] <- list(elist, NULL)
   x
 }
 
