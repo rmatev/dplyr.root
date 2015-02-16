@@ -1,22 +1,21 @@
-#' Connect to a root file.
+#' Connect to a ROOT file.
 #'
-#' Use \code{src_root} to connect to an existing root file,
-#' and \code{tbl} to connect to tables within that database.
-#' If you are running a local sqliteql database, leave all parameters set as
-#' their defaults to connect. If you're connecting to a remote database,
-#' ask your database administrator for the values of these variables.
+#' Use \code{src_root} to open an existing ROOT file,
+#' and \code{tbl} to open trees within that ROOT file.
+#' Use \code{tbl_rootchain} to open a "chain", i.e. bind
+#' multiple trees from one or many files.
 #'
-#' @param path Path to SQLite database
-#' @param create if \code{FALSE}, \code{path} must already exist. If
-#'   \code{TRUE}, will create a new SQlite3 database at \code{path}.
-#' @param src a sqlite src created with \code{src_sqlite}.
-#' @param from Either a string giving the name of table in database, or
-#'   \code{\link{sql}} described a derived table or compound join.
+#' @param path Path to ROOT file.
 #' @param ... Included for compatibility with the generic, but otherwise
 #'   ignored.
+#' @param src A ROOT src created with \code{src_root}.
+#' @param tree_name Name (and path) to the tree in the ROOT file.
+#'   Vector is recycled if used in \code{tbl_rootchain}.
+#' @param tbls Either a list of ROOT trees created with \code{tbl}, or
+#'   a character vector of file names.
+#'
 #' @export
-#' 
-src_root <- function(path) {
+src_root <- function(path, ...) {
   if (!requireNamespace("RootTreeToR", quietly = TRUE)) {
     stop("RootTreeToR package required to work with root files", call. = FALSE)
   }
