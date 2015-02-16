@@ -176,48 +176,59 @@ compute.tbl_root <- function(x, ...) {
 }
 
 #' @export
-collect.tbl_root <- function(x, n = NULL, ...) {
+collect.tbl_root <- function(x, n = NULL, protect = is.null(n), ...) {
   vars <- translate_root_q(x$vars, x, env = NULL)
   selections <- translate_root_q(x$selection, x, env = NULL)
   selection <- if (length(selections) > 0) paste0('(', selections, ')', collapse=' && ') else ''
-  if (is.null(n) || n < 0) n <- 0L
   
   pattern <- paste(names(RootTreeToR::getNames(x$tree)), collapse='|')
   needed_vars <- lapply(c(vars, selections), function(x) regmatches(x, gregexpr(pattern, x)))
   needed_vars <- unique(unlist(needed_vars))
   
   if (!is.null(x$elist))
-    narrowWithEntryList(x$tree, x$elist)  # TODO chain might be shared between tables, which makes concurent execution impossible
+    RootTreeToR::narrowWithEntryList(x$tree, x$elist)  # TODO chain might be shared between tables, which makes concurent execution impossible
   
-  if (n > 0 && n * length(vars) <= getOption('max.print')) {
+  st1 <- 0
+  if (!is.null(n) && n * length(vars) <= getOption('max.print')) {
     initial_size <- n
-    st1 <- 0
   } else {
-    st1 <- system.time({
-      n_selected <- RootTreeToR::nEntries(x$tree, selection)
-    })
-    initial_size <- if (n == 0) n_selected else min(n_selected, n)
+    n_selected <- nrow(x)
+    if (!is.finite(n_selected)) {
+      st1 <- system.time({
+        n_selected <- RootTreeToR::nEntries(x$tree, selection)
+      })
+      if (st1[3] > 1.0) {
+        message(sprintf('number of rows was determined in %.1f s (user %.1f s, sys %.1f s)', st1[3], st1[1], st1[2]))
+      }
+    }
+    initial_size <- if (is.null(n)) n_selected else min(n_selected, n)
   }
 
+  mem_estimate <- 8 * as.numeric(initial_size) * length(vars)  # assuming all columns are doubles
+  if (mem_estimate > 2*2^30) {
+    warning(sprintf('Collected data will amount to about %.1f GB', mem_estimate / 2^30))
+    if (protect) stop('If this is intended, use collect(..., protect = F)', call.=F)
+  }
+  
   st2 <- system.time({
     data <- RootTreeToR::toR(x$tree,
                              vars, selection,
                              nEntries=1000000000, # TODO
                              initialSize=max(initial_size, 1),
-                             maxSize=n,
+                             maxSize=(if (is.null(n) || n < 0) 0L else n),
                              activate=needed_vars
                              )
   })
   names(data)[1:length(vars)] <- names(vars)
   
   if (!is.null(x$elist))
-    clearEntryList(x$tree)
+    RootTreeToR::clearEntryList(x$tree)
 
   data <- grouped_df(data, groups(x))
   
   st <- st1 + st2
   if (st[3] > 1.0) {
-    message(sprintf('data was retrieved in %.1f s (user %.1f s, sys %.1f s)', st[3], st[1], st[2]))
+    message(sprintf('data (%.0f MB) was retrieved in %.1f s (user %.1f s, sys %.1f s)', object.size(data)/1024^2, st[3], st[1], st[2]))
   }
   
   data
