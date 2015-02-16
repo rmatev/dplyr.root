@@ -65,18 +65,36 @@ tbl.src_root <- function(src, tree_name, ...) {
 #' @rdname src_root
 tbl_rootchain <- function(tbls, tree_name) {
   if (is.list(tbls)) {
-    files <- sapply(tbls, function(tbl) paste0(tbl$src$path, '/', tbl$tree_name))
+    chain_desc <- data.frame(stringsAsFactors = F,
+      file = sapply(tbls, function(tbl) tbl$src$path),
+      tree_name = sapply(tbls, function(tbl) tbl$tree_name),
+    )
   } else if (is.character(tbls)) {
-    files <- if (missing(tree_name)) tbls else paste0(tbls, '/', tree_name)
+    chain_desc <- data.frame(stringsAsFactors = F, file = tbls, tree_name)
   } else {
     stop('Argument tbls must be list of tables or vector of filenames.', call.=F)
   }
+  
+  # Workaround for ROOT bug https://root.cern.ch/phpBB3/viewtopic.php?f=3&t=19131
+  # https://sft.its.cern.ch/jira/browse/ROOT-7036
+  if (anyDuplicated(chain_desc$file)) {
+    new_names <- with(chain_desc, gsub(.Platform$file.sep, '_', file.path(file, tree_name)))
+    chain_desc$symlink <- tempfile(paste0(new_names, '_'), fileext='.root')
+    res <- with(chain_desc, file.symlink(file, symlink))
+    if (!all(res)) stop('Could not create symlinks for some files', call.=F)
+    files <- with(chain_desc, file.path(symlink, tree_name))
+    # TODO how to delete these symlinks?
+  } else {
+    files <- with(chain_desc, file.path(file, tree_name))
+  }
+  
   tree <- RootTreeToR::openRootChain(tree='', files=files, verbose=F)
-
+  
   nms <- names(RootTreeToR::getNames(tree))
   vars <- setNames(lapply(nms, rootexpr_ident), nms)
   make_tbl(c('rootchain', 'root'),
            tree = tree,
+           chain_desc = chain_desc,
            vars = vars,
            selection = NULL,
            elist = NULL
