@@ -216,7 +216,8 @@ collect.tbl_root <- function(x, n = NULL, protect = is.null(n), ...) {
                              nEntries=1000000000, # TODO
                              initialSize=max(initial_size, 1),
                              maxSize=(if (is.null(n) || n < 0) 0L else n),
-                             activate=needed_vars
+                             activate=needed_vars,
+                             ...
                              )
   })
   names(data)[1:length(vars)] <- names(vars)
