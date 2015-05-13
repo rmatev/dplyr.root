@@ -48,6 +48,7 @@ as.data.frame.tbl_root <- function(x, row.names = NULL, optional = NULL, ..., n 
 print.tbl_root <- function(x, ..., n = NULL, width = NULL) {
   cat("Source: root file ", dim_desc(x), "\n", sep = "")
   cat("\n")
+  n <- min(n, as.integer(getOption('max.print')/length(vars)))
   print(trunc_mat(x, n = n, width = width))
   invisible(x)
 }
@@ -189,7 +190,7 @@ collect.tbl_root <- function(x, n = NULL, protect = is.null(n), ...) {
     RootTreeToR::narrowWithEntryList(x$tree, x$elist)  # TODO chain might be shared between tables, which makes concurent execution impossible
   
   st1 <- 0
-  if (!is.null(n) && n * length(vars) <= getOption('max.print')) {
+  if (!is.null(n)) {
     initial_size <- n
   } else {
     n_selected <- nrow(x)
