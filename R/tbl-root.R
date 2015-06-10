@@ -177,7 +177,7 @@ compute.tbl_root <- function(x, ...) {
 }
 
 #' @export
-collect.tbl_root <- function(x, n = NULL, protect = is.null(n), ...) {
+collect.tbl_root <- function(x, n = NULL, protect = is.null(n), hint = NA, ...) {
   vars <- translate_root_q(x$vars, x, env = NULL)
   selections <- translate_root_q(x$selection, x, env = NULL)
   selection <- if (length(selections) > 0) paste0('(', selections, ')', collapse=' && ') else ''
@@ -190,7 +190,9 @@ collect.tbl_root <- function(x, n = NULL, protect = is.null(n), ...) {
     RootTreeToR::narrowWithEntryList(x$tree, x$elist)  # TODO chain might be shared between tables, which makes concurent execution impossible
   
   st1 <- 0
-  if (!is.null(n)) {
+  if (hint > 0) {
+    initial_size <- hint
+  } else if (!is.null(n)) {
     initial_size <- n
   } else {
     n_selected <- nrow(x)
