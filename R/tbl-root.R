@@ -190,7 +190,7 @@ collect.tbl_root <- function(x, n = NULL, protect = is.null(n), hint = NA, ...) 
     RootTreeToR::narrowWithEntryList(x$tree, x$elist)  # TODO chain might be shared between tables, which makes concurent execution impossible
   
   st1 <- 0
-  if (hint > 0) {
+  if (!is.null(hint) && is.finite(hint) && hint > 0) {
     initial_size <- hint
   } else if (!is.null(n)) {
     initial_size <- n
