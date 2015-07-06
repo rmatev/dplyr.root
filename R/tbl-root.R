@@ -48,7 +48,8 @@ as.data.frame.tbl_root <- function(x, row.names = NULL, optional = NULL, ..., n 
 print.tbl_root <- function(x, ..., n = NULL, width = NULL) {
   cat("Source: root file ", dim_desc(x), "\n", sep = "")
   cat("\n")
-  n <- min(n, as.integer(getOption('max.print')/length(vars)))
+#   if (!is.null(n))
+#     n <- min(n, as.integer(0.9*getOption('max.print')/length(x$vars)))
   print(trunc_mat(x, n = n, width = width))
   invisible(x)
 }
