@@ -59,6 +59,14 @@ root_scalar <- sql_translator(
   xor     = function(x, y) {
     rootexpr(sprintf("((%1$s) || (%2$s)) && !((%1$s) && (%2$s))", escape_rootexpr(x), escape_rootexpr(y)))
   },
+  `%in%`  = function(x, table) {
+    table <- unique(table)
+    if (length(table) == 0) return(rootexpr("0"))
+    x <- escape_rootexpr(x)
+    table <- lapply(table, escape_rootexpr)
+    expr <- paste(sprintf("(%s == %s)", x, table), collapse = ' || ')
+    rootexpr(sprintf("(%s)", expr))
+  },
   
 #   bitwNot(a)
 #   bitwAnd(a, b)
