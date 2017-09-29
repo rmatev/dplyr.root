@@ -9,7 +9,7 @@ License: GPL-3
 LazyData: true
 Imports:
     assertthat,
-    dplyr,
+    dplyr (>= 0.7.0),
     dbplyr,
     lazyeval,
     RootTreeToR,
