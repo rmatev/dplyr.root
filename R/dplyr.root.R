@@ -1,6 +1,6 @@
 #' @import assertthat
 #' @import dplyr
-#' @import dbplyr
+#' @importFrom dbplyr sql_translator
 #' @importFrom utils head tail
 #' 
 NULL
