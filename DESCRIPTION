@@ -10,6 +10,7 @@ LazyData: true
 Imports:
     assertthat,
     dplyr,
+    dbplyr,
     lazyeval,
     RootTreeToR,
     utils
