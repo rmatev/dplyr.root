@@ -1,6 +1,6 @@
 #' @import assertthat
 #' @import dplyr
-#' @importFrom dbplyr sql_translator copy_env all_names ceply
+#' @importFrom dbplyr sql_translator
 #' @importFrom utils head tail
 #' 
 NULL
