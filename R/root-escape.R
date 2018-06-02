@@ -12,7 +12,7 @@ rootexpr <- function(x) {
 #' @export
 rootexpr_ident <- function(x) {
   if (is.null(x)) return()
-  if (is.ident(x)) return(x)
+  if (dbplyr::is.ident(x)) return(x)
   
   structure(x, class = c("ident", "rootexpr", "character"))
 }

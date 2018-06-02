@@ -15,7 +15,7 @@ translate_root_q <- function(expr, tbl = NULL, env = parent.frame()) {
   
   # If environment not null, and tbl supplied, partially evaluate input
   if (!is.null(env) && !is.null(tbl)) {
-    expr <- partial_eval(expr, tbl, env)
+    expr <- dbplyr::partial_eval(expr, tbl, env)
   }
 
   pieces <- lapply(expr, function(x) {
@@ -28,57 +28,15 @@ translate_root_q <- function(expr, tbl = NULL, env = parent.frame()) {
   unlist(pieces)
 }
 
-# root_env_expr <- function(expr) {
-#   names <- dplyr:::all_names(expr)
-#   root_env(setNames(as.list(names), names))
-# }
-# 
-# root_env <- function(vars) {
-#   if (!is.list(vars)) vars <- list(vars)
-#   
-#   default_env <- new.env(parent = emptyenv())
-#   
-#   # Known R -> ROOT functions
-#   special_calls <- dplyr:::copy_env(root_scalar, parent = default_env)
-#   
-#   # Existing symbols in expression
-#   name_env <- if (length(vars) == 0) {
-#     new.env(parent = special_calls)
-#   } else {
-#     l <- lapply(vars, function(x) escape_rootexpr(rootexpr_ident(x)))
-#     list2env(l, parent = special_calls)
-#   }
-#   
-#   # Known ROOT expressions
-#   symbol_env <- dplyr:::copy_env(root_symbols, parent = name_env)
-#   symbol_env
-# }
-
-# # Original function
-# root_env <- function(expr) {
-#   default_env <- new.env(parent = emptyenv())
-#   
-#   # Known R -> ROOT functions
-#   special_calls <- dplyr:::copy_env(root_scalar, parent = default_env)
-#   
-#   # Existing symbols in expression
-#   names <- dplyr:::all_names(expr)
-#   name_env <- dplyr:::ceply(names, function(x) escape_rootexpr(rootexpr_ident(x)), parent = special_calls)
-#   
-#   # Known ROOT expressions
-#   symbol_env <- dplyr:::copy_env(root_symbols, parent = name_env)
-#   symbol_env
-# }
-
 root_env <- function(expr, vars = NULL) {
   default_env <- new.env(parent = emptyenv())
   
   # Known R -> ROOT functions
-  special_calls <- dplyr:::copy_env(root_scalar, parent = default_env)
+  special_calls <- dbplyr:::copy_env(root_scalar, parent = default_env)
   
   # Existing symbols in expression
-  names <- dplyr:::all_names(expr)
-  name_env <- dplyr:::ceply(names, function(x) escape_rootexpr(rootexpr_ident(x)), parent = special_calls)
+  names <- dbplyr:::all_names(expr)
+  name_env <- dbplyr:::ceply(names, function(x) escape_rootexpr(rootexpr_ident(x)), parent = special_calls)
   
   # Existing variables
   context_env <- if (length(vars) == 0) {
@@ -92,6 +50,6 @@ root_env <- function(expr, vars = NULL) {
   }
   
   # Known ROOT expressions
-  symbol_env <- dplyr:::copy_env(root_symbols, parent = context_env)
+  symbol_env <- dbplyr:::copy_env(root_symbols, parent = context_env)
   symbol_env
 }

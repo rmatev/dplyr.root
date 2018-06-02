@@ -88,11 +88,11 @@ tail.tbl_root <- function(x, n = 6L, ...) {
 #' @export
 filter_.tbl_root <- function(.data, ..., .dots) {
   dots <- lazyeval::all_dots(.dots, ...)
-  input <- partial_eval(dots, .data)
+  input <- dbplyr::partial_eval(dots, tbl_vars(.data))
 
   evaluated <- lapply(input, function(expr) {
     env <- root_env(expr, .data$vars)
-    eval(expr, envir = env)
+    eval(get_expr(expr), envir = env)
   })
   
   .data$selection = c(.data$selection, evaluated)
@@ -133,12 +133,12 @@ summarise_.tbl_root <- function(.data, ..., .dots) {
 #' @export
 mutate_.tbl_root <- function(.data, ..., .dots) {
   dots <- lazyeval::all_dots(.dots, ..., all_named = TRUE)
-  input <- partial_eval(dots, .data)
+  input <- dbplyr::partial_eval(dots, tbl_vars(.data))
   
   for (i in seq_along(input)) {
     expr <- input[[i]]
     env <- root_env(expr, .data$vars)
-    evaluated <- eval(expr, envir = env)
+    evaluated <- eval(get_expr(expr), envir = env)
     .data$vars <- c(.data$vars, setNames(list(evaluated), names(input)[[i]]))
   }
   
@@ -205,7 +205,7 @@ collect.tbl_root <- function(x, n = NULL, protect = is.null(n), hint = NA, ...) 
         message(sprintf('number of rows was determined in %.1f s (user %.1f s, sys %.1f s)', st1[3], st1[1], st1[2]))
       }
     }
-    initial_size <- if (is.null(n)) n_selected else min(n_selected, n)
+    initial_size <- n_selected
   }
 
   mem_estimate <- 8 * as.numeric(initial_size) * length(vars)  # assuming all columns are doubles
@@ -225,6 +225,10 @@ collect.tbl_root <- function(x, n = NULL, protect = is.null(n), hint = NA, ...) 
                              )
   })
   names(data)[1:length(vars)] <- names(vars)
+  # TODO there is a bug in RootTreeToR::toR, workaround follows
+  if (!length(data[[1]])) {
+    attr(data, 'row.names') <- integer(0)
+  }
   
   if (!is.null(x$elist))
     RootTreeToR::clearEntryList(x$tree)

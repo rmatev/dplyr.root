@@ -10,7 +10,7 @@ rootexpr_prefix <- function (f, n = NULL) {
       stop("Invalid number of args to ROOT expression function ", f, ". Expecting ", 
            n, call. = FALSE)
     }
-    if (any(dplyr:::names2(args) != "")) {
+    if (any(names2(args) != "")) {
       warning("Named arguments ignored for ROOT expression ", f, call. = FALSE)
     }
     args <- lapply(args, escape_rootexpr)
@@ -26,11 +26,11 @@ rootexpr_infix <- function(f) {
   }
 }
 
-root_symbols <- sql_translator(
+root_symbols <- dbplyr::sql_translator(
   pi     = rootexpr('pi')
 )
 
-root_scalar <- sql_translator(
+root_scalar <- dbplyr::sql_translator(
   `+`    = rootexpr_infix("+"),
   `*`    = rootexpr_infix("*"),
   `/`    = rootexpr_infix("/"),
