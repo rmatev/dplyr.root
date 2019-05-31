@@ -86,9 +86,9 @@ tail.tbl_root <- function(x, n = 6L, ...) {
 # Verbs ------------------------------------------------------------------------
 
 #' @export
-filter_.tbl_root <- function(.data, ..., .dots) {
-  dots <- lazyeval::all_dots(.dots, ...)
-  input <- dbplyr::partial_eval(dots, tbl_vars(.data))
+filter.tbl_root <- function(.data, ..., .dots) {
+  dots <- quos(...)
+  input <- dbplyr:::partial_eval_dots(dots, vars = tbl_vars(.data))
 
   evaluated <- lapply(input, function(expr) {
     env <- root_env(expr, .data$vars)
@@ -131,9 +131,9 @@ summarise_.tbl_root <- function(.data, ..., .dots) {
 }
 
 #' @export
-mutate_.tbl_root <- function(.data, ..., .dots) {
-  dots <- lazyeval::all_dots(.dots, ..., all_named = TRUE)
-  input <- dbplyr::partial_eval(dots, tbl_vars(.data))
+mutate.tbl_root <- function(.data, ..., .dots = list()) {
+  dots <- quos(..., .named = TRUE)
+  input <- dbplyr:::partial_eval_dots(dots, vars = tbl_vars(.data))
   
   for (i in seq_along(input)) {
     expr <- input[[i]]
@@ -160,12 +160,16 @@ collapse.tbl_root <- function(x, ...) {
   selections <- translate_root_q(x$selection, x, env = NULL)
   selection <- if (length(selections) > 0) paste0('(', selections, ')', collapse=' && ') else ''
   
-  name <- paste('entrylist', sub('\\.', '_', sprintf('%.6f', Sys.time())), paste(sample(letters, 8), collapse=''), sep='_')
+  name <- paste('entrylist',
+                sub('\\.', '_', sprintf('%.6f', Sys.time())),
+                paste(sample(letters, 8), collapse=''), sep='_')
   st <- system.time({
-    elist <- RootTreeToR::makeEventList(x$tree, name=name, selection, nEntries=1000000000, entryList=T)
+    elist <- RootTreeToR::makeEventList(x$tree, name=name, selection,
+                                        nEntries=1000000000, entryList=T)
   })
   if (st[3] > 1.0) {
-    message(sprintf('selection was collapsed in %.1f s (user %.1f s, sys %.1f s)', st[3], st[1], st[2]))
+    message(sprintf('selection was collapsed in %.1f s (user %.1f s, sys %.1f s)',
+                    st[3], st[1], st[2]))
   }
   
   x[c('elist', 'selection')] <- list(elist, NULL)
@@ -187,8 +191,10 @@ collect.tbl_root <- function(x, n = NULL, protect = is.null(n), hint = NA, ...) 
   needed_vars <- lapply(c(vars, selections), function(x) regmatches(x, gregexpr(pattern, x)))
   needed_vars <- unique(unlist(needed_vars))
   
-  if (!is.null(x$elist))
-    RootTreeToR::narrowWithEntryList(x$tree, x$elist)  # TODO chain might be shared between tables, which makes concurent execution impossible
+  if (!is.null(x$elist)) {
+    RootTreeToR::narrowWithEntryList(x$tree, x$elist)
+    # TODO chain might be shared between tables, which makes concurent execution impossible
+  }
   
   st1 <- 0
   if (!is.null(hint) && is.finite(hint) && hint > 0) {
@@ -202,13 +208,15 @@ collect.tbl_root <- function(x, n = NULL, protect = is.null(n), hint = NA, ...) 
         n_selected <- RootTreeToR::nEntries(x$tree, selection)
       })
       if (st1[3] > 1.0) {
-        message(sprintf('number of rows was determined in %.1f s (user %.1f s, sys %.1f s)', st1[3], st1[1], st1[2]))
+        message(sprintf('number of rows was determined in %.1f s (user %.1f s, sys %.1f s)',
+                        st1[3], st1[1], st1[2]))
       }
     }
     initial_size <- n_selected
   }
 
-  mem_estimate <- 8 * as.numeric(initial_size) * length(vars)  # assuming all columns are doubles
+  # TODO do not assume all columns are doubles
+  mem_estimate <- 8 * as.numeric(initial_size) * length(vars)
   if (mem_estimate > 2*2^30) {
     warning(sprintf('Collected data will amount to about %.1f GB', mem_estimate / 2^30))
     if (protect) stop('If this is intended, use collect(..., protect = F)', call.=F)
@@ -233,11 +241,12 @@ collect.tbl_root <- function(x, n = NULL, protect = is.null(n), hint = NA, ...) 
   if (!is.null(x$elist))
     RootTreeToR::clearEntryList(x$tree)
 
-  data <- grouped_df(data, groups(x))
+  data <- as_tibble(data, groups(x))
   
   st <- st1 + st2
   if (st[3] > 1.0) {
-    message(sprintf('data (%.0f MB) was retrieved in %.1f s (user %.1f s, sys %.1f s)', object.size(data)/1024^2, st[3], st[1], st[2]))
+    message(sprintf('data (%.0f MB) was retrieved in %.1f s (user %.1f s, sys %.1f s)',
+                    object.size(data)/1024^2, st[3], st[1], st[2]))
   }
   
   data
