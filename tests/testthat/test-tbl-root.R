@@ -35,3 +35,11 @@ test_that("mutate works", {
     mutate(collect(data), pt = sqrt(px^2 + py^2))
   )
 })
+
+test_that("nse works", {
+  cuts <- list(eCh=0, px=50)
+  expect_identical(
+    filter(collect(data), eCh > cuts$eCh, px > cuts$px),
+    collect(filter(data, eCh > cuts$eCh, px > cuts$px))
+  )
+})

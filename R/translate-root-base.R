@@ -27,6 +27,7 @@ rootexpr_infix <- function(f) {
 }
 
 root_symbols <- dbplyr::sql_translator(
+  `$`    = `$`,  # Base environment symbol. TOOD put it somewhere better?
   pi     = rootexpr('pi')
 )
 
