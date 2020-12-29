@@ -5,8 +5,13 @@
 \alias{translate_root_q}
 \title{Translate an expression to ROOT's TTree::Draw syntax.}
 \usage{
-translate_root(..., tbl = NULL, env = parent.frame(), variant = NULL,
-  window = FALSE)
+translate_root(
+  ...,
+  tbl = NULL,
+  env = parent.frame(),
+  variant = NULL,
+  window = FALSE
+)
 
 translate_root_q(expr, tbl = NULL, env = parent.frame())
 }

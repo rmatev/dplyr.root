@@ -14,6 +14,11 @@ tbl_vars.tbl_root <- function(x) {
 }
 
 #' @export
+group_vars.tbl_root <- function(x) {
+  NULL
+}
+
+#' @export
 groups.tbl_root <- function(x) {
   NULL
 }
